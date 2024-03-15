@@ -1,29 +1,102 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+'''
+https://developers.google.com/gmail/api/reference/rest/v1/users.messages/send 
+'''
 
-class email_sending:
-    def send_email(this, sender_password, recipient_email, subject, content):
-        # Create a multipart message
-        message = MIMEMultipart()
-        message["From"] = sender_email
-        message["To"] = recipient_email
-        message["Subject"] = subject
 
-        # Add the content to the email body
-        message.attach(MIMEText(content, "plain"))
+import base64
+from email.message import EmailMessage
 
-        # Connect to the SMTP server
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.send_message(message)
+import google.auth
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
-    # Example usage
-    sender_email = "your_email@gmail.com"
-    sender_password = "your_password"
-    recipient_email = "recipient_email@example.com"
-    subject = "Hello"
-    content = "This is the email content."
 
-    send_email(sender_email, sender_password, recipient_email, subject, content)
+def gmail_create_draft():
+  """Create and insert a draft email.
+   Print the returned draft's message and id.
+   Returns: Draft object, including draft id and message meta data.
+
+  Load pre-authorized user credentials from the environment.
+  TODO(developer) - See https://developers.google.com/identity
+  for guides on implementing OAuth2 for the application.
+  """
+  creds, _ = google.auth.default()
+
+  try:
+    # create gmail api client
+    service = build("gmail", "v1", credentials=creds)
+
+    message = EmailMessage()
+
+    message.set_content("This is automated draft mail")
+
+    message["To"] = "gduser1@workspacesamples.dev"
+    message["From"] = "gduser2@workspacesamples.dev"
+    message["Subject"] = "Automated draft"
+
+    # encoded message
+    encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+    create_message = {"message": {"raw": encoded_message}}
+    # pylint: disable=E1101
+    draft = (
+        service.users()
+        .drafts()
+        .create(userId="me", body=create_message)
+        .execute()
+    )
+
+    print(f'Draft id: {draft["id"]}\nDraft message: {draft["message"]}')
+
+  except HttpError as error:
+    print(f"An error occurred: {error}")
+    draft = None
+
+  return draft
+
+
+def gmail_send_message():
+  """Create and send an email message
+  Print the returned  message id
+  Returns: Message object, including message id
+
+  Load pre-authorized user credentials from the environment.
+  TODO(developer) - See https://developers.google.com/identity
+  for guides on implementing OAuth2 for the application.
+  """
+  creds, _ = google.auth.default()
+
+  try:
+    service = build("gmail", "v1", credentials=creds)
+    message = EmailMessage()
+
+    message.set_content("This is automated draft mail")
+
+    message["To"] = "gduser1@workspacesamples.dev"
+    message["From"] = "gduser2@workspacesamples.dev"
+    message["Subject"] = "Automated draft"
+
+    # encoded message
+    encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+    create_message = {"raw": encoded_message}
+    # pylint: disable=E1101
+    send_message = (
+        service.users()
+        .messages()
+        .send(userId="me", body=create_message)
+        .execute()
+    )
+    print(f'Message Id: {send_message["id"]}')
+  except HttpError as error:
+    print(f"An error occurred: {error}")
+    send_message = None
+  return send_message
+
+
+
+if __name__ == "__main__":
+  gmail_create_draft()
+
+
+
