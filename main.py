@@ -17,9 +17,7 @@ bibigpt_summary_api = "https://bibigpt.co/api/open/yNBgX86ao6JE"
 
 # Asking the user to input the URL
 user_input_url = input("Please enter the URL. For multiple URLs, separate them with a comma: ")
-
 user_input_url_list = user_input_url.split(",") 
-
 
 # data to be sent to the api
 data = {
@@ -33,10 +31,28 @@ headers = {
 response = requests.post(bibigpt_subtitle_api, data=json.dumps(data), headers=headers)
 
 if response.status_code == 200:
-    print("request success") 
+    print("request success\n") 
     response_json = response.json()
-    # print(response_json) 
-    
+    # print(response_json, "\n") 
+
+    # Extracting the desired information from the JSON response
+    success = response_json.get('success')
+    id = response_json.get('id')
+    service = response_json.get('service')
+    sourceUrl = response_json.get('sourceUrl')
+    htmlUrl = response_json.get('htmlUrl')
+    costDuration = response_json.get('costDuration')
+    remainingTime = response_json.get('remainingTime')
+    # Printing the extracted information
+    print("Success:", success)
+    print("ID:", id)
+    print("Service:", service)
+    print("Source URL:", sourceUrl)
+    print("HTML URL:", htmlUrl)
+    print("Cost Duration:", costDuration)
+    print("Remaining Time:", remainingTime)
+    print("\n") 
+
     # Extracting subtitlesArray
     subtitles = response_json.get('detail', {}).get('subtitlesArray', [])
 
@@ -51,27 +67,6 @@ if response.status_code == 200:
     # Printing the formatted transcript
     print(transcript)
 
-
-
-
 else:
     print("request failed.", response.status_code)
 
-
-
-# # Send the formatted text to OpenAI API for summarization with bullet points
-# headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {openai_api_key}'}
-# data = {
-#     'prompt': formatted_text,
-#     'max_tokens': 200,
-#     'top_p': 1,
-#     'frequency_penalty': 0,
-#     'presence_penalty': 0
-# }
-
-# response = requests.post(openai_url, headers=headers, json=data)
-# summary = response.json()['choices'][0]['text']
-
-# # Print the summarized content with bullet points
-# summary = summary.replace('\n', '• ')
-# print(summary)
