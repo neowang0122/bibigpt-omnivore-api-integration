@@ -1,18 +1,25 @@
-# This is the main file to provide the features to request the user input and send it to bibigpt api. Once the response is received, it will send it to Omnivore.  
+'''
+This is the main file to provide the features to request the user input and send it to bibigpt api. Once the response is received, it will send it to Omnivore.  
+''' 
+
 
 import requests
 import openai
 import json  
 
-
-# Asking the user to input the URL
-user_input_url = input("Please enter the URL: ")
-
-# TODO If there are multiple url seperated by "," write a for loop to handle them
-
+'''
+API setup  
+'''
 # url for the bibigpt api
 bibigpt_subtitle_api = "https://bibigpt.co/api/open/yNBgX86ao6JE/subtitle"
 bibigpt_summary_api = "https://bibigpt.co/api/open/yNBgX86ao6JE"
+
+
+# Asking the user to input the URL
+user_input_url = input("Please enter the URL. For multiple URLs, separate them with a comma: ")
+
+user_input_url_list = user_input_url.split(",") 
+
 
 # data to be sent to the api
 data = {
