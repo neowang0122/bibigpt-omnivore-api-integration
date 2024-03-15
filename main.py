@@ -2,10 +2,12 @@
 This is the main file to provide the features to request the user input and send it to bibigpt api. Once the response is received, it will send it to Omnivore.  
 ''' 
 
-
 import requests
 import openai
 import json  
+import datetime
+import email_sending
+
 
 '''
 API setup  
@@ -30,7 +32,7 @@ headers = {
     "Content-Type": "application/json"
 }
 
-print("request sent\n") 
+print("request sent:", user_input_url, "\n") 
 response = requests.post(bibigpt_subtitle_api, data=json.dumps(data), headers=headers)
 
 if response.status_code == 200:
@@ -53,7 +55,7 @@ if response.status_code == 200:
     coverUrl = response_json.get('detail', {}).get('coverUrl')  # Accessing 'coverUrl' under 'detail'
     costDuration = response_json.get('costDuration')
     remainingTime = response_json.get('remainingTime')
-    
+
     # Printing the extracted information
     print("Success:", success)
     print("ID:", id)
@@ -68,18 +70,39 @@ if response.status_code == 200:
 
     # Extracting subtitlesArray
     subtitles = response_json.get('detail', {}).get('subtitlesArray', [])
-
+    
     # Initializing an empty string for the transcript
     transcript = ""
 
+    # # Function to convert decimal to time 
+    # def convert_decimal_to_time(decimal):
+    #     if decimal == '':
+    #         return ''
+    #     else: 
+    #         hours = int(decimal)
+    #         minutes = int((decimal - hours) * 60)
+    #         seconds = int(((decimal - hours) * 60 - minutes) * 60)
+    #         return datetime.time(hours, minutes, seconds).strftime('%H:%M:%S')
+
     # Iterating over each subtitle in the array and appending it to the transcript string
     for subtitle in subtitles:
+        index = subtitle.get('index', '')
+        startTime = subtitle.get('startTime', '') 
+        endTime = subtitle.get('endTime', '') 
+
+        # print(convert_decimal_to_time(startTime))
+
+        # startTime_str = convert_decimal_to_time(startTime)
+        # endTime_str = convert_decimal_to_time(endTime) 
+
         text = subtitle.get('text', '')
-        transcript += text + "\n"
+
+        transcript += str(index) + ' ' + '\n' + text + '\n' 
+
+        # transcript += str(index) + ' ' + startTime_str + '-' + endTime_str + '\n' + text + '\n' 
 
     # Printing the formatted transcript
     print(transcript)
-
 else:
     print("request failed.", response.status_code)
 
